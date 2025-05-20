@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Notes</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1>Family Notes</h1>
+                <button id="theme-toggle" aria-label="Toggle dark mode">
+                    <i class="fas fa-moon"></i>
+                    <i class="fas fa-sun"></i>
+                </button>
+            </div>
+            
+            <div class="tab-container">
+                <ul id="tabs" class="tabs"></ul>
+                <button id="add-tab" class="add-tab-btn"><i class="fas fa-plus"></i> Tạo tab mới</button>
+            </div>
+        </header>
+
+        <main>
+            <div class="sidebar">
+                <div class="folders-header">
+                    <h3>Thư mục</h3>
+                    <button id="add-folder" class="add-btn"><i class="fas fa-folder-plus"></i></button>
+                </div>
+                <div id="folders-list" class="folders-list"></div>
+                <div class="data-controls">
+                    <button id="export-data" class="tool-button"><i class="fas fa-file-export"></i> Xuất dữ liệu</button>
+                    <label for="import-data" class="tool-button"><i class="fas fa-file-import"></i> Nhập dữ liệu</label>
+                    <input type="file" id="import-data" accept=".json" style="display: none;">
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="search-container">
+                    <input type="text" id="search-notes" placeholder="Tìm kiếm ghi chú...">
+                    <button id="add-note" class="add-note-btn"><i class="fas fa-plus"></i> Thêm ghi chú</button>
+                </div>
+                <div id="notes-container" class="notes-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal templates -->
+    <div id="modal-backdrop" class="modal-backdrop hidden"></div>
+    
+    <!-- Tab Modal -->
+    <div id="tab-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="tab-modal-title">Tạo tab mới</h3>
+            <input type="text" id="tab-name" placeholder="Nhập tên tab">
+            <div class="modal-actions">
+                <button id="tab-modal-cancel" class="cancel-btn">Huỷ</button>
+                <button id="tab-modal-save" class="save-btn">Lưu</button>
+                <button id="tab-modal-delete" class="delete-btn hidden">Xoá tab</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Folder Modal -->
+    <div id="folder-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="folder-modal-title">Tạo thư mục mới</h3>
+            <input type="text" id="folder-name" placeholder="Nhập tên thư mục">
+            <div class="modal-actions">
+                <button id="folder-modal-cancel" class="cancel-btn">Huỷ</button>
+                <button id="folder-modal-save" class="save-btn">Lưu</button>
+                <button id="folder-modal-delete" class="delete-btn hidden">Xoá thư mục</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Note Edit Modal -->
+    <div id="note-modal" class="modal hidden">
+        <div class="modal-content note-modal-content">
+            <h3 id="note-modal-title">Thêm ghi chú</h3>
+            <input type="text" id="note-title" placeholder="Tiêu đề ghi chú">
+            <div class="note-editor">
+                <div class="note-toolbar">
+    <!-- Text formatting -->
+    <div class="toolbar-group">
+        <button data-command="bold" class="editor-btn" title="Đậm"><i class="fas fa-bold"></i></button>
+        <button data-command="italic" class="editor-btn" title="Nghiêng"><i class="fas fa-italic"></i></button>
+        <button data-command="underline" class="editor-btn" title="Gạch dưới"><i class="fas fa-underline"></i></button>
+        <button data-command="strikeThrough" class="editor-btn" title="Gạch ngang"><i class="fas fa-strikethrough"></i></button>
+    </div>
+
+    <!-- Alignments -->
+    <div class="toolbar-group">
+        <button data-command="justifyLeft" class="editor-btn" title="Căn trái"><i class="fas fa-align-left"></i></button>
+        <button data-command="justifyCenter" class="editor-btn" title="Căn giữa"><i class="fas fa-align-center"></i></button>
+        <button data-command="justifyRight" class="editor-btn" title="Căn phải"><i class="fas fa-align-right"></i></button>
+    </div>
+
+    <!-- Lists -->
+    <div class="toolbar-group">
+        <button data-command="insertUnorderedList" class="editor-btn" title="Danh sách không thứ tự"><i class="fas fa-list-ul"></i></button>
+        <button data-command="insertOrderedList" class="editor-btn" title="Danh sách có thứ tự"><i class="fas fa-list-ol"></i></button>
+        <button data-command="indent" class="editor-btn" title="Thụt lề"><i class="fas fa-indent"></i></button>
+        <button data-command="outdent" class="editor-btn" title="Giảm lề"><i class="fas fa-outdent"></i></button>
+    </div>
+
+    <!-- Text style -->
+    <div class="toolbar-group">
+        <select id="heading-select" class="editor-select" title="Kiểu văn bản">
+            <option value="">Văn bản thường</option>
+            <option value="h1">Tiêu đề 1</option>
+            <option value="h2">Tiêu đề 2</option>
+            <option value="h3">Tiêu đề 3</option>
+            <option value="blockquote">Trích dẫn</option>
+            <option value="pre">Mã</option>
+        </select>
+        
+        <input type="color" id="text-color" class="editor-color" title="Màu chữ">
+        <input type="color" id="bg-color" value="#ffffff" class="editor-color" title="Màu nền">
+    </div>
+
+    <!-- Media -->
+    <div class="toolbar-group">
+        <label class="editor-btn" title="Chèn ảnh">
+            <i class="fas fa-image"></i>
+            <input type="file" id="image-upload" accept="image/*" style="display: none;">
+        </label>
+        <label class="editor-btn" title="Đính kèm tệp">
+            <i class="fas fa-paperclip"></i>
+            <input type="file" id="file-upload" style="display: none;">
+        </label>
+        <button id="insert-link" class="editor-btn" title="Chèn liên kết"><i class="fas fa-link"></i></button>
+        <button id="insert-table" class="editor-btn" title="Chèn bảng"><i class="fas fa-table"></i></button>
+    </div>
+
+    <!-- Utils -->
+    <div class="toolbar-group">
+        <button data-command="undo" class="editor-btn" title="Hoàn tác"><i class="fas fa-undo"></i></button>
+        <button data-command="redo" class="editor-btn" title="Làm lại"><i class="fas fa-redo"></i></button>
+        <button id="clear-format" class="editor-btn" title="Xóa định dạng"><i class="fas fa-eraser"></i></button>
+    </div>
+</div>
+                <div id="note-content" contenteditable="true" class="note-content"></div>
+            </div>
+            <div class="modal-actions">
+                <button id="note-modal-cancel" class="cancel-btn">Huỷ</button>
+                <button id="note-modal-save" class="save-btn">Lưu</button>
+                <button id="note-modal-delete" class="delete-btn hidden">Xoá ghi chú</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
